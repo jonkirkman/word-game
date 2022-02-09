@@ -69,6 +69,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.4"
+  flutter_neumorphic:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "12ffde5fecdc4724b4c64c4db92fd4dfd303f9a9"
+      url: "https://github.com/tsvillain/Flutter-Neumorphic.git"
+    source: git
+    version: "3.1.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -165,3 +174,4 @@ packages:
     version: "2.1.0"
 sdks:
   dart: ">=2.12.0 <3.0.0"
+  flutter: ">=1.13.18"

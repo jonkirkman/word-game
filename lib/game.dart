@@ -4,45 +4,50 @@ import 'package:werds/dictionary_usa.dart';
 final Set<String> alphabet = Set.from('abcdefghijklmnnopqrstuvwxyz'.split(''));
 var random = Random();
 
-enum ResultType { valid, notFound, missingRequired, tooShort, alreadyFound }
+enum ResultType { none, valid, notFound, missingRequired, tooShort, alreadyFound }
 
 class Result {
-  ResultType type = ResultType.notFound;
+  ResultType type = ResultType.none;
   String message = '';
 
-  Result.valid() { type = ResultType.valid; }
-  Result.notFound() { type = ResultType.notFound; }
-  Result.missingRequired() { type = ResultType.missingRequired; }
-  Result.tooShort() { type = ResultType.tooShort; }
-  Result.alreadyFound() { type = ResultType.alreadyFound; }
+  Result.none(): 
+    type = ResultType.none,
+    message = "";
+  Result.valid(): 
+    type = ResultType.valid,
+    message = "Good work!";
+  Result.notFound(): 
+    type = ResultType.notFound,
+    message = "Not found";
+  Result.missingRequired(): 
+    type = ResultType.missingRequired,
+    message = "missing the required letter";
+  Result.tooShort(): 
+    type = ResultType.tooShort,
+    message = "too short";
+  Result.alreadyFound(): 
+    type = ResultType.alreadyFound,
+    message = "already found";
 }
 
-Set<String> reduceDictionary(int minLength, Set<String>requiredLetters, Set<String>allowedLetters) {
-  Set<String> _dict = Set.from(dictionary);
-  // print(_dict.length);
-  // print("minLength: $minLength \nrequiredLetters: $requiredLetters \nallowedLetters:$allowedLetters");
+List<String> reduceDictionary(int minLength, List<String>requiredLetters, List<String>allowedLetters) {
+  List<String> _dict = List.from(dictionary);
 
   _dict.removeWhere((word) => word.length < minLength);
-  // print("retaining words longer than $minLength -- ${_dict.length}");
 
   for (var letter in requiredLetters) {
     _dict.retainWhere((word) => word.contains(letter));
-    // print("retaining words with $letter -- ${_dict.length}");
   }
 
   for (var letter in disallowedLetters(allowedLetters)) {
     _dict.removeWhere((word) => word.contains(letter));
-    // print("removing words with $letter -- ${_dict.length}");
   }
 
-  // print(allowedLetters);
-  // print(_dict.length);
-  // print(_dict);
   return _dict;
 }
 
-Set<String> disallowedLetters(Set<String>allowedLetters) {
-  Set<String> letterPool = Set.from(alphabet);
+List<String> disallowedLetters(List<String>allowedLetters) {
+  List<String> letterPool = List.from(alphabet);
   for (var letter in allowedLetters) {
     letterPool.remove(letter);
   }
@@ -50,10 +55,10 @@ Set<String> disallowedLetters(Set<String>allowedLetters) {
   return letterPool;
 }
 
-Set<String> randomLetters(int count, Set<String> skip) {
-  Set<String> letters = {};
+List<String> randomLetters(int count, List<String> skip) {
+  List<String> letters = [];
 
-  Set<String> letterPool = Set.from(alphabet);
+  List<String> letterPool = List.from(alphabet);
   for (var letter in skip) {
     letterPool.remove(letter);
   }
@@ -71,46 +76,49 @@ Set<String> randomLetters(int count, Set<String> skip) {
 
 class Game {
   int minLength = 4;
-  Set<String> allowedLetters = {};
-  Set<String> requiredLetters = {};
-  Set<String> foundWords = {};
-  Set<String> dict = {};
+  List<String> allowedLetters = [];
+  List<String> requiredLetters = [];
+  List<String> foundWords = [];
+  List<String> dict = [];
   String attempt = '';
 
   Game() {
-    requiredLetters = randomLetters(1, {});
+    requiredLetters = randomLetters(1, []);
     allowedLetters = randomLetters(6, requiredLetters);
     allowedLetters.addAll(requiredLetters);
 
     dict = reduceDictionary(4, requiredLetters, allowedLetters);
   }
 
+  void shuffle() {
+    allowedLetters.shuffle();
+  }
+
   Result submitAttempt() {
-    print("checking $attempt");
     // is the attempt long enough?
     if (attempt.length < minLength) {
       return Result.tooShort();
     }
     // have we already found this word?
     if (foundWords.contains(attempt)) {
+      attempt = '';
       return Result.alreadyFound();
     }
     // does the attempt include the required letters?
     if (!requiredLetters.every((element) => attempt.contains(element))) {
+      attempt = '';
       return Result.missingRequired();
     }
     // is the attempt found in the reduced dictionary?
     if (dict.contains(attempt)) {
       foundWords.add(attempt);
+      foundWords.sort();
       attempt = '';
       return Result.valid();
     }
     // default return is the implicit else case
+    attempt = '';
     return Result.notFound();
   }
 
-  _buildAttempt(String letter) {
-    attempt += letter;
-    print(attempt);
-  }
 }
